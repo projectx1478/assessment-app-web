@@ -7,5 +7,5 @@ compatibility_date = "2025-01-01"
 # 実際のKV Namespaceを作成し、id / preview_id を置き換えること。
 [[kv_namespaces]]
 binding = "ASSIGNMENT_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_PREVIEW_KV_NAMESPACE_ID"
+id = "1b17a4b446fa42609809a1bb37478884"
+preview_id = "1b17a4b446fa42609809a1bb37478884"
