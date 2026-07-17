@@ -1,0 +1,3 @@
+# ローカル開発時のみ使用（wrangler devが自動で読み込む）。
+# 本番デプロイ時は `wrangler secret put GEMINI_API_KEY` を使うこと（このファイルはコミットしない）。
+GEMINI_API_KEY=your-gemini-api-key-here
