@@ -1,53 +1,54 @@
 # SESSION
 
-> 詳細な確定仕様はREQUIREMENTS.md、構成はARCHITECTURE.md、API仕様はAPI.md、
-> 変更履歴はCHANGELOG.mdを参照。このSESSION.mdは直近の作業状態のみを保持する。
+> 詳細な確定仕様・構成・API仕様はPROJECT.mdを参照。このSESSION.mdは直近の状態のみを保持する。
+> ローカルのプロジェクトフォルダは削除済み。以後はGitHubのブラウザ編集のみで開発する。
+
+## 本番環境（デプロイ済み）
+- GitHubリポジトリ: https://github.com/projectx1478/assessment-app-web
+- Cloudflare Worker名: assessment-app-web
+- 本番URL: https://assessment-app-web.projectx1478.workers.dev
+- デプロイ方式: GitHub連携（Cloudflare Workers Builds）。mainブランチにpushすると自動ビルド・デプロイ
+  - Build command: npm install && npm run build
+  - Deploy command: npx wrangler versions upload（Cloudflare側が自動で本番に反映）
+- KV Namespace: ASSIGNMENT_KV（id: 1b17a4b446fa42609809a1bb37478884）※wrangler.tomlに設定済み
+- Secrets（Cloudflareダッシュボード → Settings → Variables and Secrets）
+  - GEMINI_API_KEY: 設定済み
+- Build variables（未設定・要対応）
+  - VITE_GOOGLE_CLIENT_ID: 未設定。ビルド時に埋め込まれる値のためSecretsではなく
+    「Build variables / Environment variables」欄に設定が必要。設定するまで⑦Spreadsheet
+    反映機能は本番で動作しない。
+
+## 動作確認済み（ローカル、フォルダ削除前）
+- ①課題アップロード→解析 ②評価基準確認(チェックボックス+自由記述) ③CSVデータ取込
+  ④採点 ⑤結果確認 ⑥Excel出力 ⑦Spreadsheet新規作成/既存反映
+- 本番: ①〜⑥は動作確認済み（/usageで200 OK確認）。画面(index.html)が404になる不具合を
+  wrangler v4へのアップグレードで解消（v3.114ではassets機能が正しく動作しなかった）。
+  v4への切り替え後の本番再確認は未実施。
 
 ## 決定事項
-- 内部評価スコア: 理解度/正確性/論理性/表現力は各0-100点
-- 出力形式: ABC / 1-5 / 0-100 の3種を提供
-- assignmentId: 内容ハッシュ方式（同一課題は自動キャッシュ流用）
-- Geminiモデル: gemini-3.1-flash-lite 固定
-- Import Engineの列判定: ローカル判定のみ（氏名等PIIはAIに一切送信しない）
-- 判定不能列: 教員による手動割当UIで対応
-- 対応形式: 今回はExcel/CSVのみ（Google Spreadsheetは将来対応）
+決定事項の詳細はPROJECT.md「5. このプロジェクト固有の設計」に集約済み。
 
-## 完了
-- ディレクトリ雛形、models/、evaluators/{hundred,fiveScale,abc,rubric}
-- utils/hash.ts, utils/piiFilter.ts
-- cache/assignmentCache.ts, cache/answerCache.ts
-- providers/gemini/client.ts
-- engines/analysis, engines/assessment（キャッシュ優先、Rule1・Rule9準拠）
-- engines/import（fileParser.ts: SheetJSでExcel/CSV読込、列判定+PII除外+手動オーバーライド）
-- engines/report（ローカル集計 + クラス分析はGemini1回呼び出し Rule10準拠）
-- components/ColumnAssignment.tsx
-- api/schemas.ts, api/router.ts（Hono + Zod、requestLoggerミドルウェア、/usageエンドポイント）
-- cache/usageStats.ts, middleware/requestLogger.ts（Rule: Log API usage）
-- package.json, tsconfig.json作成
-- npm install + tsc --noEmit 実行 → エラーなし
-- tests/（evaluators, piiFilter, import, report）13件全て成功
-- src/App.tsx（useStateによるstep管理: upload→criteria→grading→results、ルーター未使用）
-- tsc --noEmit 再確認 → エラーなし
-- /importFile エンドポイント追加（multipart、サーバーにファイル・生徒データを保存しない）
-- App.tsx: ファイルアップロード方式に変更。未判定列はフロント保持のファイルを再送して手動割当
-- utils/exportExcel.ts, ResultsStepに⑥Excel出力ボタン追加（1シート・全員一覧）
-- utils/googleSheets.ts（クライアントサイドOAuth、Google Identity Services経由）
-- ResultsStepに⑦Spreadsheetへ反映ボタン追加（アクセストークンはブラウザ内のみ保持、サーバー非経由）
-- .env.example作成（VITE_GOOGLE_CLIENT_ID）
-- 【修正】index.html, src/main.tsx, src/index.css, vite.config.ts, tailwind.config.js,
-  postcss.config.js が欠落しておりnpm run devが起動しない不備を修正（vite build成功確認済み）
-- package.jsonにVite関連devDependencies追加
-
-## 決定事項（追加）
-- 未判定列の再送方式: フロント保持＋再送（サーバー側にファイル一時保存しない）
-- Excel出力レイアウト: 1シートに全員一覧（行=生徒）
-- Spreadsheet反映: クライアントサイドOAuth（Workers側にOAuthシークレット・トークンを一切保存しない）
+## 完了（実装済み機能の一覧）
+- models/, evaluators/{hundred,fiveScale,abc,rubric}
+- utils/hash.ts, utils/piiFilter.ts, utils/exportExcel.ts, utils/googleSheets.ts
+- cache/assignmentCache.ts, cache/answerCache.ts, cache/usageStats.ts
+- providers/gemini/client.ts（gemini-3.1-flash-lite）
+- engines/analysis, engines/assessment（キャッシュ優先）
+- engines/import（fileParser.ts + 列判定 + PII除外 + 手動オーバーライド）
+- engines/report（ローカル集計 + クラス分析はGemini1回呼び出し）
+- components/ColumnAssignment.tsx, components/CriteriaSelector.tsx
+- api/router.ts（/analyzeAssignment /updateCriteria /importFile /grade /analyzeClass /usage）
+- middleware/requestLogger.ts
+- App.tsx（useStateによるstep管理、ルーター未使用）
+- index.html, main.tsx, index.css, vite.config.ts, tailwind.config.js, postcss.config.js
+- wrangler.toml（[assets]によるフロント静的配信 + KV Namespace設定済み）
+- tests/（evaluators, piiFilter, import, report）13件全て成功、tsc --noEmit エラーなし
 
 ## 未完了タスク
-- wrangler kv namespace create でKV実体を作成し、id/preview_idを差し替え
-- GEMINI_API_KEY を wrangler secret put で登録
-- Google Cloud ConsoleでOAuthクライアントID作成 + Sheets API有効化（ユーザー側作業）
+- Cloudflareダッシュボードで VITE_GOOGLE_CLIENT_ID をBuild variablesに追加し再デプロイ
+- wrangler v4アップグレード後、本番URLで①〜⑦を再度通し確認
 - Google Spreadsheet「取込」対応（現状は「反映」のみ、将来対応）
+- requirements.mdの削除（PROJECT.mdへ統合済みのため）
 
 ## 次に行う作業
-- README.mdへセットアップ手順（KV作成・Secret登録・OAuth設定）をまとめる
+- VITE_GOOGLE_CLIENT_ID のBuild variables設定 → 再デプロイ → ⑦の本番動作確認
