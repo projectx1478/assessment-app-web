@@ -12,10 +12,19 @@ import type { AnswerCacheEnv } from "../cache/answerCache";
 import type { UsageStatsEnv } from "../cache/usageStats";
 import { importFromFile, type ManualColumnOverride } from "../engines/import";
 
-type Env = GeminiEnv & AssignmentCacheEnv & AnswerCacheEnv & UsageStatsEnv;
+type Env = GeminiEnv & AssignmentCacheEnv & AnswerCacheEnv & UsageStatsEnv & {
+  GOOGLE_CLIENT_ID?: string;
+};
 
 const app = new Hono<{ Bindings: Env }>();
 app.use("*", requestLogger);
+
+// フロントがビルド時ではなく起動時に取得するための公開設定値。
+// GOOGLE_CLIENT_IDは秘匿情報ではないため公開して問題ない
+// （Google OAuthのクライアントIDはブラウザJSに公開される前提の値）。
+app.get("/config", async (c) => {
+  return c.json({ googleClientId: c.env.GOOGLE_CLIENT_ID ?? "" });
+});
 
 app.post("/updateCriteria", zValidator("json", updateCriteriaSchema), async (c) => {
   const { assignmentId, evaluationCriteria } = c.req.valid("json");
