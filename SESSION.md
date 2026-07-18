@@ -65,3 +65,4 @@
 - VITE_GOOGLE_CLIENT_ID のBuild variables設定 → 再デプロイ → ⑦の本番動作確認
 <!-- redeploy trigger: 2026-07-18T16:21:25.840761 -->
 <!-- redeploy trigger (VITE_GOOGLE_CLIENT_ID re-registered): 2026-07-18T21:32:49.367211+00:00 -->
+<!-- redeploy trigger (Build tab Variables and secrets configured): 2026-07-18T22:01:54.033027+00:00 -->
