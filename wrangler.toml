@@ -2,6 +2,10 @@ name = "ai-assessment-platform"
 main = "src/api/router.ts"
 compatibility_date = "2025-01-01"
 
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
 # Gemini APIキーは `wrangler secret put GEMINI_API_KEY` で登録すること。
 # Cloudflareダッシュボードまたは `wrangler kv namespace create ASSIGNMENT_KV` で
 # 実際のKV Namespaceを作成し、id / preview_id を置き換えること。
