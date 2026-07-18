@@ -110,6 +110,7 @@ Report Engine
 - `POST /grade`：assignmentId + studentAnswers[] → 評価JSON
 - `POST /analyzeClass`：採点結果 → クラス分析
 - `GET /usage`：API利用量・キャッシュ利用率
+- `GET /config`：フロント起動時の公開設定値取得（Google Client IDなど、秘匿情報ではない値のみ）
 
 ### 認証方法
 
@@ -257,7 +258,7 @@ Layer4：クラス分析
 - 判定不能列：教員による手動割当UIで対応
 - 対応形式：現状はExcel/CSVのみ（Google Spreadsheet直接取込は将来対応）
 - Excel出力レイアウト：1シートに全員一覧（行=生徒）
-- Spreadsheet反映：クライアントサイドOAuth
+- Spreadsheet反映：クライアントサイドOAuth（Google Client IDはビルド時埋め込みではなく、`GET /config`経由で実行時取得。CloudflareのVariables and SecretsにGOOGLE_CLIENT_IDとして設定）
 - 評価基準確認：AI提案 → チェックボックス選択＋自由記述 → `/updateCriteria`でKV反映後に採点
 - 静的アセット配信：Cloudflare Workersの[assets]機能（wrangler v4以降が必須）
 

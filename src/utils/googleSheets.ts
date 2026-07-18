@@ -1,9 +1,3 @@
-/// <reference types="vite/client" />
-
-interface ImportMetaEnv {
-  readonly VITE_GOOGLE_CLIENT_ID: string;
-}
-
 declare global {
   interface Window {
     google?: {
@@ -23,6 +17,30 @@ declare global {
 const SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const GIS_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
 
+let cachedGoogleClientId: string | null = null;
+
+/**
+ * Google Client IDをWorker側の /config から取得する。
+ * ビルド時埋め込み（VITE_GOOGLE_CLIENT_ID）ではなく実行時取得にすることで、
+ * Cloudflare側の値を変更しても再デプロイ不要にする。
+ */
+async function fetchGoogleClientId(): Promise<string> {
+  if (cachedGoogleClientId) return cachedGoogleClientId;
+
+  const res = await fetch("/config");
+  if (!res.ok) {
+    throw new Error(`設定情報の取得に失敗しました: ${res.status}`);
+  }
+  const data = await res.json<{ googleClientId: string }>();
+  if (!data.googleClientId) {
+    throw new Error(
+      "GOOGLE_CLIENT_IDが未設定です（CloudflareのVariables and SecretsにGOOGLE_CLIENT_IDを設定してください）"
+    );
+  }
+  cachedGoogleClientId = data.googleClientId;
+  return cachedGoogleClientId;
+}
+
 function loadGisScript(): Promise<void> {
   if (window.google?.accounts?.oauth2) return Promise.resolve();
   return new Promise((resolve, reject) => {
@@ -39,11 +57,7 @@ function loadGisScript(): Promise<void> {
  * トークンはブラウザ内のみで保持し、サーバーには送らない。
  */
 async function requestAccessToken(): Promise<string> {
-  await loadGisScript();
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  if (!clientId) {
-    throw new Error("VITE_GOOGLE_CLIENT_IDが未設定です（.envに設定してください）");
-  }
+  const [, clientId] = await Promise.all([loadGisScript(), fetchGoogleClientId()]);
 
   return new Promise((resolve, reject) => {
     const client = window.google!.accounts.oauth2.initTokenClient({
