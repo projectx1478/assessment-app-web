@@ -1,4 +1,4 @@
-name = "ai-assessment-platform"
+name = "assessment-app-web"
 main = "src/api/router.ts"
 compatibility_date = "2025-01-01"
 
