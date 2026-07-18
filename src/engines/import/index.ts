@@ -16,8 +16,10 @@ export function detectColumnRole(header: string): ColumnRole {
   const h = header.trim().toLowerCase();
   if (isPiiColumn(header)) return "name";
   if (NUMBER_KEYWORDS.some((k) => h.includes(k))) return "number";
-  if (QUESTION_KEYWORDS.some((k) => h.includes(k))) return "question";
+  // 「設問1：回答」のように両方のキーワードを含む列名は、採点対象である
+  // freeText（回答本文）を優先する。設問キーワードのみ含む列はquestionのまま。
   if (FREE_TEXT_KEYWORDS.some((k) => h.includes(k))) return "freeText";
+  if (QUESTION_KEYWORDS.some((k) => h.includes(k))) return "question";
   return "unknown";
 }
 
