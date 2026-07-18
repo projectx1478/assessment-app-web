@@ -63,3 +63,4 @@
 
 ## 次に行う作業
 - VITE_GOOGLE_CLIENT_ID のBuild variables設定 → 再デプロイ → ⑦の本番動作確認
+<!-- redeploy trigger: 2026-07-18T16:21:25.840761 -->
