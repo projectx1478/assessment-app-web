@@ -74,7 +74,9 @@ async function requestAccessToken(): Promise<string> {
 
 export interface SheetRow {
   studentAnswerId: string;
-  value: string | number;
+  threePerspective: { basic: string; standard: string; advanced: string };
+  fiveScale: number;
+  hundred: number;
   comment: string;
 }
 
@@ -119,8 +121,16 @@ export async function createSpreadsheetWithResults(
   const created = await createRes.json<{ spreadsheetId: string; spreadsheetUrl: string }>();
 
   const values = [
-    ["生徒ID", "評価", "コメント"],
-    ...rows.map((r) => [r.studentAnswerId, String(r.value), r.comment]),
+    ["生徒ID", "三観点評価（基礎）", "三観点評価（標準）", "三観点評価（応用）", "5段階評価", "100点法", "コメント"],
+    ...rows.map((r) => [
+      r.studentAnswerId,
+      r.threePerspective.basic,
+      r.threePerspective.standard,
+      r.threePerspective.advanced,
+      String(r.fiveScale),
+      String(r.hundred),
+      r.comment,
+    ]),
   ];
   const writeRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${created.spreadsheetId}/values/採点結果!A1:append?valueInputOption=USER_ENTERED`,
@@ -151,7 +161,15 @@ export async function appendResultsToSpreadsheet(
 ): Promise<void> {
   const accessToken = await requestAccessToken();
   const sheetName = await getFirstSheetTitle(spreadsheetId, accessToken);
-  const values = rows.map((r) => [r.studentAnswerId, String(r.value), r.comment]);
+  const values = rows.map((r) => [
+    r.studentAnswerId,
+    r.threePerspective.basic,
+    r.threePerspective.standard,
+    r.threePerspective.advanced,
+    String(r.fiveScale),
+    String(r.hundred),
+    r.comment,
+  ]);
 
   const res = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(

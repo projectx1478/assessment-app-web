@@ -1,100 +1,153 @@
 import { useState } from "react";
 
-interface CriteriaSelectorProps {
-  suggested: string[];
-  onConfirm: (selected: string[]) => void;
+export type CriteriaTier = "basic" | "standard" | "advanced";
+
+export interface TieredCriteria {
+  basic: string[];
+  standard: string[];
+  advanced: string[];
 }
 
+interface CriteriaSelectorProps {
+  suggested: TieredCriteria;
+  onConfirm: (selected: TieredCriteria) => void;
+}
+
+const TIER_INFO: Record<CriteriaTier, { label: string; hint: string; badge: string }> = {
+  basic: { label: "基礎", hint: "最低限身につけたい理解", badge: "bg-forest-50 text-forest-700" },
+  standard: { label: "標準", hint: "標準的な到達レベル", badge: "bg-gold-400/15 text-gold-500" },
+  advanced: { label: "応用", hint: "発展的・応用的な理解", badge: "bg-pen-50 text-pen-500" },
+};
+
+const TIERS: CriteriaTier[] = ["basic", "standard", "advanced"];
+
 export default function CriteriaSelector({ suggested, onConfirm }: CriteriaSelectorProps) {
-  const [checked, setChecked] = useState<Record<string, boolean>>(
-    Object.fromEntries(suggested.map((c) => [c, true]))
-  );
-  const [customItems, setCustomItems] = useState<string[]>([]);
-  const [draft, setDraft] = useState("");
+  const initialChecked: Record<string, boolean> = {};
+  for (const tier of TIERS) {
+    for (const c of suggested[tier]) initialChecked[`${tier}:${c}`] = true;
+  }
+  const [checked, setChecked] = useState<Record<string, boolean>>(initialChecked);
+  const [customItems, setCustomItems] = useState<Record<CriteriaTier, string[]>>({
+    basic: [],
+    standard: [],
+    advanced: [],
+  });
+  const [drafts, setDrafts] = useState<Record<CriteriaTier, string>>({
+    basic: "",
+    standard: "",
+    advanced: "",
+  });
 
-  function toggle(criterion: string) {
-    setChecked((prev) => ({ ...prev, [criterion]: !prev[criterion] }));
+  function toggle(tier: CriteriaTier, criterion: string) {
+    const key = `${tier}:${criterion}`;
+    setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  function addCustom() {
-    const text = draft.trim();
+  function addCustom(tier: CriteriaTier) {
+    const text = drafts[tier].trim();
     if (!text) return;
-    setCustomItems((prev) => [...prev, text]);
-    setChecked((prev) => ({ ...prev, [text]: true }));
-    setDraft("");
+    setCustomItems((prev) => ({ ...prev, [tier]: [...prev[tier], text] }));
+    setChecked((prev) => ({ ...prev, [`${tier}:${text}`]: true }));
+    setDrafts((prev) => ({ ...prev, [tier]: "" }));
   }
 
-  function removeCustom(text: string) {
-    setCustomItems((prev) => prev.filter((c) => c !== text));
+  function removeCustom(tier: CriteriaTier, text: string) {
+    setCustomItems((prev) => ({ ...prev, [tier]: prev[tier].filter((c) => c !== text) }));
     setChecked((prev) => {
       const next = { ...prev };
-      delete next[text];
+      delete next[`${tier}:${text}`];
       return next;
     });
   }
 
-  const allItems = [...suggested, ...customItems];
-  const selectedCount = allItems.filter((c) => checked[c]).length;
+  function allItemsOf(tier: CriteriaTier): string[] {
+    return [...suggested[tier], ...customItems[tier]];
+  }
+
+  const selectedCount = TIERS.reduce(
+    (sum, tier) => sum + allItemsOf(tier).filter((c) => checked[`${tier}:${c}`]).length,
+    0
+  );
+
+  function handleConfirm() {
+    const result: TieredCriteria = { basic: [], standard: [], advanced: [] };
+    for (const tier of TIERS) {
+      result[tier] = allItemsOf(tier).filter((c) => checked[`${tier}:${c}`]);
+    }
+    onConfirm(result);
+  }
 
   return (
-    <div className="space-y-3">
-      <p className="text-sm font-medium text-gray-800">AIが提案した評価観点（チェックを外すと除外されます）</p>
-      <ul className="space-y-1">
-        {suggested.map((c) => (
-          <li key={c} className="flex items-center gap-2 text-sm text-gray-800">
-            <input
-              type="checkbox"
-              checked={checked[c] ?? true}
-              onChange={() => toggle(c)}
-            />
-            <span>{c}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="space-y-5">
+      <p className="text-base text-ink-muted">
+        AIが提案した評価観点です。段階ごとにチェックを外したり、独自の観点を追加できます。
+      </p>
 
-      {customItems.length > 0 && (
-        <>
-          <p className="text-sm font-medium text-gray-800">追加した観点</p>
-          <ul className="space-y-1">
-            {customItems.map((c) => (
-              <li key={c} className="flex items-center gap-2 text-sm text-gray-800">
-                <input type="checkbox" checked={checked[c] ?? true} onChange={() => toggle(c)} />
-                <span>{c}</span>
-                <button
-                  className="text-xs text-red-600 hover:underline"
-                  onClick={() => removeCustom(c)}
-                >
-                  削除
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      {TIERS.map((tier) => {
+        const info = TIER_INFO[tier];
+        return (
+          <div key={tier} className="rounded-xl border border-line bg-white p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <span className={`rounded-full px-2.5 py-1 text-sm font-semibold ${info.badge}`}>
+                {info.label}
+              </span>
+              <span className="text-sm text-ink-muted">{info.hint}</span>
+            </div>
 
-      <div className="flex gap-2">
-        <input
-          type="text"
-          className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
-          placeholder="独自の評価観点を追加（例: 独創性）"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") addCustom();
-          }}
-        />
-        <button
-          className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-50"
-          onClick={addCustom}
-        >
-          追加
-        </button>
-      </div>
+            <ul className="space-y-2">
+              {allItemsOf(tier).map((c) => {
+                const isCustom = customItems[tier].includes(c);
+                return (
+                  <li key={c} className="flex items-center gap-2.5 text-base text-ink">
+                    <input
+                      type="checkbox"
+                      className="h-5 w-5 rounded border-line text-forest-500 focus:ring-forest-500"
+                      checked={checked[`${tier}:${c}`] ?? true}
+                      onChange={() => toggle(tier, c)}
+                    />
+                    <span className="flex-1">{c}</span>
+                    {isCustom && (
+                      <button
+                        type="button"
+                        className="text-sm text-pen-500 hover:underline"
+                        onClick={() => removeCustom(tier, c)}
+                      >
+                        削除
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="mt-3 flex gap-2">
+              <input
+                type="text"
+                className="flex-1 rounded-lg border border-line px-3 py-2 text-base focus:border-forest-500 focus:outline-none"
+                placeholder={`${info.label}の観点を追加`}
+                value={drafts[tier]}
+                onChange={(e) => setDrafts((prev) => ({ ...prev, [tier]: e.target.value }))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addCustom(tier);
+                }}
+              />
+              <button
+                type="button"
+                className="rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-paper"
+                onClick={() => addCustom(tier)}
+              >
+                追加
+              </button>
+            </div>
+          </div>
+        );
+      })}
 
       <button
-        className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        type="button"
+        className="rounded-lg bg-forest-500 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:opacity-50"
         disabled={selectedCount === 0}
-        onClick={() => onConfirm(allItems.filter((c) => checked[c]))}
+        onClick={handleConfirm}
       >
         評価観点を確定する（{selectedCount}件選択中）
       </button>
