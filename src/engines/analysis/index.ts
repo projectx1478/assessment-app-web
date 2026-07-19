@@ -1,4 +1,4 @@
-import type { Assignment } from "../../models/assignment";
+import type { Assignment, TieredCriteria } from "../../models/assignment";
 import { callGemini, type GeminiEnv } from "../../providers/gemini/client";
 import { ANALYSIS_SYSTEM_PROMPT, buildAnalysisUserPrompt } from "../../prompts/analysis";
 import { generateAssignmentId } from "../../utils/hash";
@@ -15,7 +15,7 @@ interface GeminiAnalysisJson {
   subject: string;
   unit: string;
   learningGoals: string[];
-  evaluationCriteria: string[];
+  evaluationCriteria: TieredCriteria;
   modelAnswer: string;
   commonMistakes: string[];
 }

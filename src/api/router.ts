@@ -11,6 +11,10 @@ import type { AssignmentCacheEnv } from "../cache/assignmentCache";
 import type { AnswerCacheEnv } from "../cache/answerCache";
 import type { UsageStatsEnv } from "../cache/usageStats";
 import { importFromFile, type ManualColumnOverride } from "../engines/import";
+import { hundredEvaluator } from "../evaluators/hundred";
+import { fiveScaleEvaluator } from "../evaluators/fiveScale";
+import { toThreePerspective } from "../evaluators/threePerspective";
+import type { CombinedEvaluationResult } from "../models/evaluation";
 
 type Env = GeminiEnv & AssignmentCacheEnv & AnswerCacheEnv & UsageStatsEnv & {
   GOOGLE_CLIENT_ID?: string;
@@ -78,7 +82,18 @@ app.post("/grade", zValidator("json", gradeSchema), async (c) => {
     JSON.parse(assignment),
     studentAnswers.map((s) => ({ ...s, assignmentId }))
   );
-  return c.json({ evaluations });
+
+  // 内部評価（4軸・3段階スコア）から、三観点評価(ABC)・5段階・100点法の
+  // 3方式を同時に生成して返す。
+  const combined: CombinedEvaluationResult[] = evaluations.map((evaluation) => ({
+    studentAnswerId: evaluation.studentAnswerId,
+    threePerspective: toThreePerspective(evaluation),
+    fiveScale: fiveScaleEvaluator.convert(evaluation).value as number,
+    hundred: hundredEvaluator.convert(evaluation).value as number,
+    comment: evaluation.comment,
+  }));
+
+  return c.json({ evaluations: combined });
 });
 
 app.post("/analyzeClass", zValidator("json", analyzeClassSchema), async (c) => {
