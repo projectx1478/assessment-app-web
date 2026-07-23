@@ -7,7 +7,11 @@ describe("isPiiColumn", () => {
     expect(isPiiColumn("生徒名")).toBe(true);
     expect(isPiiColumn("Name")).toBe(true);
   });
-  it("氏名でないヘッダーは検出しない", () => {
+  it("メールアドレス系ヘッダーを検出する", () => {
+    expect(isPiiColumn("メールアドレス")).toBe(true);
+    expect(isPiiColumn("Email")).toBe(true);
+  });
+  it("氏名でもメールアドレスでもないヘッダーは検出しない", () => {
     expect(isPiiColumn("回答")).toBe(false);
     expect(isPiiColumn("番号")).toBe(false);
   });
