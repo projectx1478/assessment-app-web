@@ -41,6 +41,7 @@ AI評価支援システム（assessment-app-web）
 - 評価方式プラグイン（100点法／5段階／ABC／ルーブリック等、方式変更時はAIを呼ばない）
 - クラス全体分析（平均点・理解率・頻出誤答・誤概念分析・授業改善提案）
 - Excel出力／Google Spreadsheetへの反映（クライアントサイドOAuth）
+- 生徒個別へのフィードバック配信（Gmail送信＋Classroomお知らせ通知、クライアントサイドOAuth）
 - API利用量・キャッシュ利用率の表示
 
 ## 任意機能
@@ -51,7 +52,6 @@ AI評価支援システム（assessment-app-web）
 ## 将来追加予定
 
 - PDF対応 / OCR / 手書き答案
-- Google Classroom連携
 - Google Spreadsheetの直接取込（現状は反映のみ対応）
 - 学校独自評価基準／学習指導要領対応
 - AIモデル切替（Gemini/OpenAI/Claude）
@@ -121,6 +121,7 @@ Report Engine
 
 - Gemini APIキー：Cloudflare Workers Secretsのみに保存
 - Google Spreadsheet連携：クライアントサイドOAuth（Workers側にOAuthシークレット・トークンを一切保存しない）
+- フィードバック配信連携：クライアントサイドOAuth（`gmail.send` / `classroom.courses.readonly` / `classroom.announcements`）。Spreadsheet連携と同じくWorkers側にトークンを保存しない
 
 ### 利用制限
 
@@ -259,7 +260,12 @@ Layer4：クラス分析
 - 採点結果：三観点評価（ABC）・5段階評価・100点法の3方式を同時に表示・出力する（評価のランクは評価基準確認で示した3段階に対応）
 - 生徒データアップロード時、雛形Excel（番号・氏名・回答1〜3列）をダウンロードできるようにする（public/template_student_data.xlsx）
 - 静的アセット配信：Cloudflare Workersの[assets]機能（wrangler v4以降が必須）
-- 列判定にメールアドレス列を追加（Google Classroom連携での生徒紐付け用）。氏名列と同様にPII扱いとし、Gemini APIには送信しない。生徒番号→メールアドレスのマッピングはフロント側でのみ保持する
+- 列判定にメールアドレス列を追加（フィードバック配信での生徒紐付け用）。氏名列と同様にPII扱いとし、Gemini APIには送信しない。生徒番号→メールアドレスのマッピングはフロント側でのみ保持する
+- フィードバック配信：Gmail送信（`gmail.send`）＋Classroomお知らせ投稿（`classroom.announcements`）の組み合わせで実現。クライアントサイドOAuth（Sheets連携と同じ方式）
+  - 採用理由：Classroom APIの`studentSubmissions`（成績・添付ファイル）は「そのcourseWorkを作成したのと同じ開発者プロジェクトのみ」書き込み可能という制限があり、教員がClassroom上で直接作成した既存課題には本アプリから書き込めない（PERMISSION_DENIED）。また私的コメント欄自体もAPIに存在しない。announcements.createにはこの制限がないため採用
+  - フィードバック本文はGmail経由（生徒個別）、配信の告知はClassroomへのお知らせ投稿（クラス全体向け、1件）
+  - 送信前に教員がプレビュー画面で生徒ごとの本文を確認・編集してから送信する
+  - メールアドレス未登録の生徒は配信対象外とし、画面上で警告表示する
 
 ## 本番環境
 
