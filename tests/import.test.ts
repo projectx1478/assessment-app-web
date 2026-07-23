@@ -11,6 +11,12 @@ describe("detectColumns", () => {
     expect(result.unknownHeaders).toHaveLength(0);
   });
 
+  it("メールアドレス列を判定する", () => {
+    const result = detectColumns(["メールアドレス", "出席番号", "回答"]);
+    expect(result.emailHeader).toBe("メールアドレス");
+    expect(result.unknownHeaders).toHaveLength(0);
+  });
+
   it("未知のヘッダーはunknownHeadersに入る", () => {
     const result = detectColumns(["謎列"]);
     expect(result.unknownHeaders).toEqual(["謎列"]);

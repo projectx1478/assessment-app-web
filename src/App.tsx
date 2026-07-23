@@ -31,12 +31,14 @@ interface StudentAnswer {
 interface ImportResult {
   columns: {
     nameHeader?: string;
+    emailHeader?: string;
     numberHeader?: string;
     questionHeaders: string[];
     freeTextHeaders: string[];
     unknownHeaders: string[];
   };
   studentAnswers: StudentAnswer[];
+  emailByStudentId: Record<string, string>;
 }
 
 const TIER_LABEL: Record<"basic" | "standard" | "advanced", string> = {
@@ -107,7 +109,7 @@ export default function App() {
   // ブラウザ側で保持しておき、教員の手動割当と一緒に再送する。
   async function handleImportFile(
     file: File,
-    override?: Record<string, "number" | "question" | "freeText" | "ignore">
+    override?: Record<string, "number" | "email" | "question" | "freeText" | "ignore">
   ) {
     if (!assignment) return;
     setError(null);
@@ -121,12 +123,14 @@ export default function App() {
           const questionHeaders: string[] = [];
           const freeTextHeaders: string[] = [];
           let numberHeader: string | undefined;
+          let emailHeader: string | undefined;
           for (const [header, role] of Object.entries(override)) {
             if (role === "question") questionHeaders.push(header);
             else if (role === "freeText") freeTextHeaders.push(header);
             else if (role === "number") numberHeader = header;
+            else if (role === "email") emailHeader = header;
           }
-          return { questionHeaders, freeTextHeaders, numberHeader };
+          return { questionHeaders, freeTextHeaders, numberHeader, emailHeader };
         })();
 
       const form = new FormData();

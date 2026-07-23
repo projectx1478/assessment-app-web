@@ -2,18 +2,19 @@ import { useState } from "react";
 
 export interface ColumnAssignmentProps {
   unknownHeaders: string[];
-  onConfirm: (mapping: Record<string, "number" | "question" | "freeText" | "ignore">) => void;
+  onConfirm: (mapping: Record<string, "number" | "email" | "question" | "freeText" | "ignore">) => void;
 }
 
 const ROLE_LABELS: Record<string, string> = {
   number: "番号",
+  email: "メールアドレス",
   question: "設問",
   freeText: "自由記述",
   ignore: "使用しない",
 };
 
 export default function ColumnAssignment({ unknownHeaders, onConfirm }: ColumnAssignmentProps) {
-  const [mapping, setMapping] = useState<Record<string, "number" | "question" | "freeText" | "ignore">>(
+  const [mapping, setMapping] = useState<Record<string, "number" | "email" | "question" | "freeText" | "ignore">>(
     Object.fromEntries(unknownHeaders.map((h) => [h, "ignore"]))
   );
 

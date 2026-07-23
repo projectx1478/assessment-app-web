@@ -2,11 +2,24 @@
  * 個人情報（氏名等）を判定するためのヘッダーキーワード。
  * この列の値はGemini APIへ絶対に送信しない。
  */
-const PII_HEADER_KEYWORDS = ["氏名", "名前", "name", "生徒名", "フルネーム"];
+const NAME_HEADER_KEYWORDS = ["氏名", "名前", "name", "生徒名", "フルネーム"];
+const EMAIL_HEADER_KEYWORDS = ["メール", "mail"];
 
-export function isPiiColumn(header: string): boolean {
+export function isNameColumn(header: string): boolean {
   const normalized = header.trim().toLowerCase();
-  return PII_HEADER_KEYWORDS.some((k) => normalized.includes(k.toLowerCase()));
+  return NAME_HEADER_KEYWORDS.some((k) => normalized.includes(k.toLowerCase()));
+}
+
+export function isEmailColumn(header: string): boolean {
+  const normalized = header.trim().toLowerCase();
+  return EMAIL_HEADER_KEYWORDS.some((k) => normalized.includes(k.toLowerCase()));
+}
+
+/**
+ * 氏名・メールアドレスなど、Gemini APIへ絶対に送信してはいけない列かどうか。
+ */
+export function isPiiColumn(header: string): boolean {
+  return isNameColumn(header) || isEmailColumn(header);
 }
 
 /**
