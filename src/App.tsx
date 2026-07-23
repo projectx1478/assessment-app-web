@@ -3,6 +3,7 @@ import ColumnAssignment from "./components/ColumnAssignment";
 import CriteriaSelector, { type TieredCriteria } from "./components/CriteriaSelector";
 import StepTracker from "./components/StepTracker";
 import Spinner from "./components/Spinner";
+import FeedbackDelivery from "./components/FeedbackDelivery";
 import { exportResultsToExcel } from "./utils/exportExcel";
 import { appendResultsToSpreadsheet, createSpreadsheetWithResults } from "./utils/googleSheets";
 
@@ -319,6 +320,8 @@ export default function App() {
           {step === "results" && (
             <ResultsStep
               results={results}
+              emailByStudentId={importResult?.emailByStudentId ?? {}}
+              assignmentLabel={assignment ? `${assignment.subject} / ${assignment.unit}` : ""}
               onRestart={() => {
                 setAssignment(null);
                 setCriteriaConfirmed(false);
@@ -404,9 +407,13 @@ function GradingStep({
 
 function ResultsStep({
   results,
+  emailByStudentId,
+  assignmentLabel,
   onRestart,
 }: {
   results: CombinedEvaluationResult[];
+  emailByStudentId: Record<string, string>;
+  assignmentLabel: string;
   onRestart: () => void;
 }) {
   const [sheetStatus, setSheetStatus] = useState<string | null>(null);
@@ -515,6 +522,11 @@ function ResultsStep({
         </button>
         {sheetStatus && <span className="text-xs text-ink-muted">{sheetStatus}</span>}
       </div>
+      <FeedbackDelivery
+        results={results}
+        emailByStudentId={emailByStudentId}
+        assignmentLabel={assignmentLabel}
+      />
     </div>
   );
 }
