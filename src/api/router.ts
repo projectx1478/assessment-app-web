@@ -83,7 +83,7 @@ app.post("/grade", zValidator("json", gradeSchema), async (c) => {
     studentAnswers.map((s) => ({ ...s, assignmentId }))
   );
 
-  // 内部評価（4軸・3段階スコア）から、三観点評価(ABC)・5段階・100点法の
+  // 内部評価（4軸・9スコア）から、三観点評価(ABC)・5段階・100点法の
   // 3方式を同時に生成して返す。
   const combined: CombinedEvaluationResult[] = evaluations.map((evaluation) => ({
     studentAnswerId: evaluation.studentAnswerId,

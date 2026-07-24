@@ -5,11 +5,17 @@ export interface Evaluation {
   accuracy: number;
   logic: number;
   expression: number;
-  // 評価観点3段階（基礎・標準・応用）ごとの到達度（各0-100点）。
-  // 「三観点評価（ABC）」表示の元データになる。
-  basicScore: number;
-  standardScore: number;
-  advancedScore: number;
+  // 3つの評価視点（知識・思考・態度）× 3つの到達度段階（基礎・標準・応用）= 9スコア。
+  // 各0-100の整数。「三観点評価（ABC）」表示の元データになる。
+  knowledgeBasic: number;
+  knowledgeStandard: number;
+  knowledgeAdvanced: number;
+  thinkingBasic: number;
+  thinkingStandard: number;
+  thinkingAdvanced: number;
+  attitudeBasic: number;
+  attitudeStandard: number;
+  attitudeAdvanced: number;
   // 生徒の回答のどの部分を根拠に評価したかを具体的に示すコメント。
   comment: string;
   // 今後に向けた具体的な改善提案。
@@ -27,11 +33,11 @@ export interface EvaluationResult {
   comment: string;
 }
 
-/** 三観点評価（ABC）：基礎・標準・応用それぞれのランク。 */
+/** 三観点評価（ABC）：知識・思考・態度それぞれのランク。 */
 export interface ThreePerspectiveResult {
-  basic: Rank;
-  standard: Rank;
-  advanced: Rank;
+  knowledge: Rank;
+  thinking: Rank;
+  attitude: Rank;
 }
 
 /** 結果確認画面・出力（Excel/Spreadsheet）で使う、3方式を同時に含む評価結果。 */

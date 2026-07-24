@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { escapeHtml, formatGradeLabel, buildFeedbackEmailHtml } from "../src/utils/feedbackHtml";
 
 const gradeInput = {
-  threePerspective: { basic: "A", standard: "B", advanced: "C" },
+  threePerspective: { knowledge: "A", thinking: "B", attitude: "C" },
   fiveScale: 4,
   hundred: 82,
 };
@@ -16,9 +16,9 @@ describe("formatGradeLabel", () => {
   });
   it("三観点評価", () => {
     const label = formatGradeLabel(gradeInput, "abc");
-    expect(label).toContain("基礎:A");
-    expect(label).toContain("標準:B");
-    expect(label).toContain("応用:C");
+    expect(label).toContain("知識:A");
+    expect(label).toContain("思考:B");
+    expect(label).toContain("態度:C");
   });
 });
 
