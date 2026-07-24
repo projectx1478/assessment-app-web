@@ -43,6 +43,12 @@ export default function CriteriaSelector({ suggested, onConfirm }: CriteriaSelec
     setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
+  function handleReset() {
+    setChecked(initialChecked);
+    setCustomItems({ basic: [], standard: [], advanced: [] });
+    setDrafts({ basic: "", standard: "", advanced: "" });
+  }
+
   function addCustom(tier: CriteriaTier) {
     const text = drafts[tier].trim();
     if (!text) return;
@@ -143,14 +149,23 @@ export default function CriteriaSelector({ suggested, onConfirm }: CriteriaSelec
         );
       })}
 
-      <button
-        type="button"
-        className="rounded-lg bg-forest-500 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={selectedCount === 0}
-        onClick={handleConfirm}
-      >
-        評価観点を確定する（{selectedCount}件選択中）
-      </button>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className="rounded-lg bg-forest-500 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={selectedCount === 0}
+          onClick={handleConfirm}
+        >
+          評価観点を確定する（{selectedCount}件選択中）
+        </button>
+        <button
+          type="button"
+          className="rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper"
+          onClick={handleReset}
+        >
+          AI提案にリセット
+        </button>
+      </div>
     </div>
   );
 }
