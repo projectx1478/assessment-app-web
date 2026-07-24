@@ -49,20 +49,20 @@ function encodeMimeHeader(text: string): string {
 }
 
 /**
- * Gmail APIのusers.messages.sendに渡すRFC 2822形式のメール本文を組み立てる。
+ * Gmail APIのusers.messages.sendに渡すRFC 2822形式のメール本文を組み立てる（HTMLメール）。
  */
-export function buildRfc2822Message(to: string, subject: string, body: string): string {
+export function buildRfc2822Message(to: string, subject: string, bodyHtml: string): string {
   const headers = [
     `To: ${to}`,
     `Subject: ${encodeMimeHeader(subject)}`,
-    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Type: text/html; charset=UTF-8",
     "MIME-Version: 1.0",
   ].join("\r\n");
-  return `${headers}\r\n\r\n${body}`;
+  return `${headers}\r\n\r\n${bodyHtml}`;
 }
 
-async function sendGmail(accessToken: string, to: string, subject: string, body: string): Promise<void> {
-  const raw = encodeBase64Url(buildRfc2822Message(to, subject, body));
+async function sendGmail(accessToken: string, to: string, subject: string, bodyHtml: string): Promise<void> {
+  const raw = encodeBase64Url(buildRfc2822Message(to, subject, bodyHtml));
   const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
     method: "POST",
     headers: {
@@ -76,10 +76,16 @@ async function sendGmail(accessToken: string, to: string, subject: string, body:
   }
 }
 
+export interface AnnouncementLink {
+  url: string;
+  title?: string;
+}
+
 export async function createClassroomAnnouncement(
   accessToken: string,
   courseId: string,
-  text: string
+  text: string,
+  link?: AnnouncementLink
 ): Promise<void> {
   const res = await fetch(`https://classroom.googleapis.com/v1/courses/${courseId}/announcements`, {
     method: "POST",
@@ -87,7 +93,12 @@ export async function createClassroomAnnouncement(
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({
+      text,
+      // linkをmaterialsとして添付すると、Classroom側でクリック可能なリンクカードとして表示される
+      // （text内の裸のURLに依存しない確実な方法）。
+      ...(link ? { materials: [{ link: { url: link.url, title: link.title } }] } : {}),
+    }),
   });
   if (!res.ok) {
     throw new Error(`お知らせの投稿に失敗しました: ${res.status} ${await res.text()}`);
@@ -98,7 +109,7 @@ export interface FeedbackEmailItem {
   studentId: string;
   email: string;
   subject: string;
-  body: string;
+  bodyHtml: string;
 }
 
 export interface FeedbackSendResult {
@@ -116,13 +127,14 @@ export async function sendFeedbackBatch(
   accessToken: string,
   items: FeedbackEmailItem[],
   courseId: string,
-  announcementText: string
+  announcementText: string,
+  announcementLink?: AnnouncementLink
 ): Promise<FeedbackSendResult[]> {
   const results: FeedbackSendResult[] = [];
 
   for (const item of items) {
     try {
-      await sendGmail(accessToken, item.email, item.subject, item.body);
+      await sendGmail(accessToken, item.email, item.subject, item.bodyHtml);
       results.push({ studentId: item.studentId, email: item.email, success: true });
     } catch (e) {
       results.push({
@@ -134,7 +146,7 @@ export async function sendFeedbackBatch(
     }
   }
 
-  await createClassroomAnnouncement(accessToken, courseId, announcementText);
+  await createClassroomAnnouncement(accessToken, courseId, announcementText, announcementLink);
 
   return results;
 }

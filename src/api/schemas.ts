@@ -29,6 +29,7 @@ export const analyzeClassSchema = z.object({
         standardScore: z.number().min(0).max(100),
         advancedScore: z.number().min(0).max(100),
         comment: z.string(),
+        improvementSuggestion: z.string(),
       })
     )
     .min(1),

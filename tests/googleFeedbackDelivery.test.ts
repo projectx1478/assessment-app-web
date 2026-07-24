@@ -5,7 +5,7 @@ describe("buildRfc2822Message", () => {
   it("宛先・件名・本文を含むRFC 2822形式のメッセージを組み立てる", () => {
     const message = buildRfc2822Message("student@example.com", "件名テスト", "本文テスト");
     expect(message).toContain("To: student@example.com");
-    expect(message).toContain("Content-Type: text/plain; charset=UTF-8");
+    expect(message).toContain("Content-Type: text/html; charset=UTF-8");
     expect(message).toContain("\r\n\r\n本文テスト");
   });
 

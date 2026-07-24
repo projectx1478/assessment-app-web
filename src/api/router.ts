@@ -91,6 +91,7 @@ app.post("/grade", zValidator("json", gradeSchema), async (c) => {
     fiveScale: fiveScaleEvaluator.convert(evaluation).value as number,
     hundred: hundredEvaluator.convert(evaluation).value as number,
     comment: evaluation.comment,
+    improvementSuggestion: evaluation.improvementSuggestion,
   }));
 
   return c.json({ evaluations: combined });

@@ -10,7 +10,10 @@ export interface Evaluation {
   basicScore: number;
   standardScore: number;
   advancedScore: number;
+  // 生徒の回答のどの部分を根拠に評価したかを具体的に示すコメント。
   comment: string;
+  // 今後に向けた具体的な改善提案。
+  improvementSuggestion: string;
 }
 
 export type Rank = "A" | "B" | "C";
@@ -38,4 +41,5 @@ export interface CombinedEvaluationResult {
   fiveScale: number; // 1-5
   hundred: number; // 0-100
   comment: string;
+  improvementSuggestion: string;
 }
