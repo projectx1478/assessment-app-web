@@ -258,7 +258,7 @@ Layer4：クラス分析
 - Spreadsheet反映：クライアントサイドOAuth（Google Client IDはビルド時埋め込みではなく、`GET /config`経由で実行時取得。CloudflareのVariables and SecretsにGOOGLE_CLIENT_IDとして設定）
 - 評価基準確認：AI提案を基礎・標準・応用の3段階（各3〜4個）に分けて提示 → チェックボックス選択＋自由記述（段階ごとに追加可） → `/updateCriteria`でKV反映後に採点
 - 採点結果：三観点評価（ABC）・5段階評価・100点法の3方式を同時に表示・出力する（評価のランクは評価基準確認で示した3段階に対応）
-- 生徒データアップロード時、雛形Excel（番号・氏名・回答1〜3列）をダウンロードできるようにする（public/template_student_data.xlsx）
+- 生徒データアップロード時、雛形Excel（番号・氏名・メールアドレス・回答1〜3列）をダウンロードできるようにする（public/template_student_data.xlsx）
 - 静的アセット配信：Cloudflare Workersの[assets]機能（wrangler v4以降が必須）
 - 列判定にメールアドレス列を追加（フィードバック配信での生徒紐付け用）。氏名列と同様にPII扱いとし、Gemini APIには送信しない。生徒番号→メールアドレスのマッピングはフロント側でのみ保持する
 - フィードバック配信：Gmail送信（`gmail.send`）＋Classroomお知らせ投稿（`classroom.announcements`）の組み合わせで実現。クライアントサイドOAuth（Sheets連携と同じ方式）

@@ -271,7 +271,7 @@ export default function App() {
                       download
                       className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-forest-500 hover:underline"
                     >
-                      ダウンロード：雛形Excel（番号・氏名・回答1〜3）
+                      ダウンロード：雛形Excel（番号・氏名・メールアドレス・回答1〜3）
                     </a>
 
                     <div className="flex items-center gap-3">
