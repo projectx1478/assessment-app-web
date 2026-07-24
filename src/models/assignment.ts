@@ -1,9 +1,10 @@
-export type CriteriaTier = "basic" | "standard" | "advanced";
+export type EvaluationPerspective = "knowledge" | "thinking" | "attitude";
+export type ProficiencyLevel = "basic" | "standard" | "advanced";
 
 export interface TieredCriteria {
-  basic: string[];
-  standard: string[];
-  advanced: string[];
+  knowledge: { basic: string[]; standard: string[]; advanced: string[] };
+  thinking: { basic: string[]; standard: string[]; advanced: string[] };
+  attitude: { basic: string[]; standard: string[]; advanced: string[] };
 }
 
 export interface Assignment {
@@ -11,7 +12,7 @@ export interface Assignment {
   subject: string;
   unit: string;
   learningGoals: string[];
-  // 評価観点は「基礎・標準・応用」の3段階に分けて保持する。
+  // 評価観点は3つの視点（知識・思考・態度）× 3段階（基礎・標準・応用）で保持する。
   evaluationCriteria: TieredCriteria;
   modelAnswer: string;
   commonMistakes: string[];

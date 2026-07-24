@@ -1,11 +1,12 @@
 import { useState } from "react";
 import ColumnAssignment from "./components/ColumnAssignment";
-import CriteriaSelector, { type TieredCriteria } from "./components/CriteriaSelector";
+import CriteriaSelector from "./components/CriteriaSelector";
 import StepTracker from "./components/StepTracker";
 import Spinner from "./components/Spinner";
 import FeedbackDelivery from "./components/FeedbackDelivery";
 import { exportResultsToExcel } from "./utils/exportExcel";
 import { appendResultsToSpreadsheet, createSpreadsheetWithResults } from "./utils/googleSheets";
+import type { TieredCriteria } from "./models/assignment";
 
 type Step = "upload" | "criteria" | "grading" | "results";
 
@@ -18,7 +19,7 @@ interface Assignment {
 
 interface CombinedEvaluationResult {
   studentAnswerId: string;
-  threePerspective: { basic: string; standard: string; advanced: string };
+  threePerspective: { knowledge: string; thinking: string; attitude: string };
   fiveScale: number;
   hundred: number;
   comment: string;
@@ -43,7 +44,13 @@ interface ImportResult {
   emailByStudentId: Record<string, string>;
 }
 
-const TIER_LABEL: Record<"basic" | "standard" | "advanced", string> = {
+const PERSPECTIVE_LABEL: Record<"knowledge" | "thinking" | "attitude", string> = {
+  knowledge: "知識・技能",
+  thinking: "思考・判断・表現",
+  attitude: "主体的に学習に取り組む態度",
+};
+
+const LEVEL_LABEL: Record<"basic" | "standard" | "advanced", string> = {
   basic: "基礎",
   standard: "標準",
   advanced: "応用",
@@ -252,17 +259,24 @@ export default function App() {
 
               {criteriaConfirmed && (
                 <>
-                  <div className="space-y-3">
-                    {(["basic", "standard", "advanced"] as const).map((tier) => (
-                      <div key={tier}>
-                        <p className="mb-1 text-sm font-semibold text-ink-muted">
-                          {TIER_LABEL[tier]}
-                        </p>
-                        <ul className="list-inside list-disc text-base text-ink">
-                          {assignment.evaluationCriteria[tier].map((c) => (
-                            <li key={c}>{c}</li>
+                  <div className="space-y-4">
+                    {(["knowledge", "thinking", "attitude"] as const).map((perspective) => (
+                      <div key={perspective}>
+                        <p className="mb-2 text-base font-semibold text-ink">{PERSPECTIVE_LABEL[perspective]}</p>
+                        <div className="space-y-2 pl-3">
+                          {(["basic", "standard", "advanced"] as const).map((level) => (
+                            <div key={`${perspective}-${level}`}>
+                              <p className="mb-1 text-sm font-medium text-ink-muted">
+                                {LEVEL_LABEL[level]}
+                              </p>
+                              <ul className="list-inside list-disc text-sm text-ink">
+                                {assignment.evaluationCriteria[perspective][level].map((c: string) => (
+                                  <li key={c}>{c}</li>
+                                ))}
+                              </ul>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -470,7 +484,7 @@ function ResultsStep({
           <thead>
             <tr className="border-b border-line bg-paper text-sm text-ink-muted">
               <th className="px-3 py-2">生徒ID</th>
-              <th className="px-3 py-2">三観点評価（基礎/標準/応用）</th>
+              <th className="px-3 py-2">三観点評価（知識/思考/態度）</th>
               <th className="px-3 py-2">5段階評価</th>
               <th className="px-3 py-2">100点法</th>
               <th className="px-3 py-2">コメント</th>
@@ -481,15 +495,15 @@ function ResultsStep({
             {results.map((r) => (
               <tr key={r.studentAnswerId} className="border-b border-line last:border-0">
                 <td className="px-3 py-2 font-semibold text-forest-500">{r.studentAnswerId}</td>
-                <td className="px-3 py-2">
-                  <span className="mr-2 rounded bg-forest-50 px-1.5 py-0.5 text-sm text-forest-700">
-                    {r.threePerspective.basic}
+                <td className="px-3 py-2 space-x-1">
+                  <span className="mr-1 rounded bg-forest-50 px-1.5 py-0.5 text-sm text-forest-700">
+                    知識:{r.threePerspective.knowledge}
                   </span>
-                  <span className="mr-2 rounded bg-gold-400/15 px-1.5 py-0.5 text-sm text-gold-500">
-                    {r.threePerspective.standard}
+                  <span className="mr-1 rounded bg-gold-400/15 px-1.5 py-0.5 text-sm text-gold-500">
+                    思考:{r.threePerspective.thinking}
                   </span>
                   <span className="rounded bg-pen-50 px-1.5 py-0.5 text-sm text-pen-500">
-                    {r.threePerspective.advanced}
+                    態度:{r.threePerspective.attitude}
                   </span>
                 </td>
                 <td className="px-3 py-2">{r.fiveScale}</td>

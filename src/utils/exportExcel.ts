@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 
 export interface ExportableResult {
   studentAnswerId: string;
-  threePerspective: { basic: string; standard: string; advanced: string };
+  threePerspective: { knowledge: string; thinking: string; attitude: string };
   fiveScale: number;
   hundred: number;
   comment: string;
@@ -16,9 +16,9 @@ export interface ExportableResult {
 export function exportResultsToExcel(results: ExportableResult[], filename = "採点結果.xlsx") {
   const rows = results.map((r) => ({
     生徒ID: r.studentAnswerId,
-    "三観点評価（基礎）": r.threePerspective.basic,
-    "三観点評価（標準）": r.threePerspective.standard,
-    "三観点評価（応用）": r.threePerspective.advanced,
+    "三観点評価（知識）": r.threePerspective.knowledge,
+    "三観点評価（思考）": r.threePerspective.thinking,
+    "三観点評価（態度）": r.threePerspective.attitude,
     "5段階評価": r.fiveScale,
     "100点法": r.hundred,
     コメント: r.comment,

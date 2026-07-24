@@ -1,7 +1,7 @@
 export type FeedbackGradeScale = "abc" | "fiveScale" | "hundred";
 
 export interface FeedbackGradeInput {
-  threePerspective: { basic: string; standard: string; advanced: string };
+  threePerspective: { knowledge: string; thinking: string; attitude: string };
   fiveScale: number;
   hundred: number;
 }
@@ -9,7 +9,7 @@ export interface FeedbackGradeInput {
 export function formatGradeLabel(result: FeedbackGradeInput, scale: FeedbackGradeScale): string {
   if (scale === "hundred") return `${result.hundred}点`;
   if (scale === "fiveScale") return `5段階評価: ${result.fiveScale}`;
-  return `三観点評価　基礎:${result.threePerspective.basic} / 標準:${result.threePerspective.standard} / 応用:${result.threePerspective.advanced}`;
+  return `三観点評価　知識:${result.threePerspective.knowledge} / 思考:${result.threePerspective.thinking} / 態度:${result.threePerspective.attitude}`;
 }
 
 export function escapeHtml(text: string): string {

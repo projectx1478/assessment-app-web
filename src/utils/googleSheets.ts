@@ -8,7 +8,7 @@ function requestAccessToken(): Promise<string> {
 
 export interface SheetRow {
   studentAnswerId: string;
-  threePerspective: { basic: string; standard: string; advanced: string };
+  threePerspective: { knowledge: string; thinking: string; attitude: string };
   fiveScale: number;
   hundred: number;
   comment: string;
@@ -58,9 +58,9 @@ export async function createSpreadsheetWithResults(
   const values = [
     [
       "生徒ID",
-      "三観点評価（基礎）",
-      "三観点評価（標準）",
-      "三観点評価（応用）",
+      "三観点評価（知識）",
+      "三観点評価（思考）",
+      "三観点評価（態度）",
       "5段階評価",
       "100点法",
       "コメント",
@@ -68,9 +68,9 @@ export async function createSpreadsheetWithResults(
     ],
     ...rows.map((r) => [
       r.studentAnswerId,
-      r.threePerspective.basic,
-      r.threePerspective.standard,
-      r.threePerspective.advanced,
+      r.threePerspective.knowledge,
+      r.threePerspective.thinking,
+      r.threePerspective.attitude,
       String(r.fiveScale),
       String(r.hundred),
       r.comment,
@@ -108,9 +108,9 @@ export async function appendResultsToSpreadsheet(
   const sheetName = await getFirstSheetTitle(spreadsheetId, accessToken);
   const values = rows.map((r) => [
     r.studentAnswerId,
-    r.threePerspective.basic,
-    r.threePerspective.standard,
-    r.threePerspective.advanced,
+    r.threePerspective.knowledge,
+    r.threePerspective.thinking,
+    r.threePerspective.attitude,
     String(r.fiveScale),
     String(r.hundred),
     r.comment,

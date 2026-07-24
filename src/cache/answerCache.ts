@@ -14,7 +14,7 @@ async function buildKey(assignmentId: string, answerText: string): Promise<strin
 
 /**
  * 同一回答の採点結果がキャッシュにあれば返す（Rule9）。
- * 評価データにbasicScore等の3段階スコアが無い旧形式のキャッシュは
+ * 評価データに9段階スコア（知識・思考・態度 × 基礎・標準・応用）が無い旧形式のキャッシュは
  * 互換性がないため、キャッシュミス扱いにして再採点させる。
  */
 export async function findCachedEvaluation(
@@ -27,7 +27,7 @@ export async function findCachedEvaluation(
   if (!raw) return null;
 
   const parsed = JSON.parse(raw) as Evaluation;
-  if (typeof parsed.basicScore !== "number") return null;
+  if (typeof parsed.knowledgeBasic !== "number") return null;
   return parsed;
 }
 

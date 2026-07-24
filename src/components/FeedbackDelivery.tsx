@@ -12,7 +12,7 @@ import { buildFeedbackEmailHtml, formatGradeLabel, type FeedbackGradeScale } fro
 
 export interface FeedbackDeliveryResult {
   studentAnswerId: string;
-  threePerspective: { basic: string; standard: string; advanced: string };
+  threePerspective: { knowledge: string; thinking: string; attitude: string };
   fiveScale: number;
   hundred: number;
   comment: string;
