@@ -6,6 +6,7 @@ export interface ExportableResult {
   fiveScale: number;
   hundred: number;
   comment: string;
+  improvementSuggestion: string;
 }
 
 /**
@@ -21,6 +22,7 @@ export function exportResultsToExcel(results: ExportableResult[], filename = "�
     "5段階評価": r.fiveScale,
     "100点法": r.hundred,
     コメント: r.comment,
+    改善提案: r.improvementSuggestion,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(rows);

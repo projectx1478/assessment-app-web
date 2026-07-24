@@ -11,7 +11,11 @@ const base: Evaluation = {
   accuracy: 80,
   logic: 70,
   expression: 60,
+  basicScore: 80,
+  standardScore: 70,
+  advancedScore: 60,
   comment: "よく書けています",
+  improvementSuggestion: "根拠をもう一段階具体的に示すとより良い",
 };
 
 describe("hundredEvaluator", () => {

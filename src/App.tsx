@@ -22,6 +22,7 @@ interface CombinedEvaluationResult {
   fiveScale: number;
   hundred: number;
   comment: string;
+  improvementSuggestion: string;
 }
 
 interface StudentAnswer {
@@ -55,6 +56,7 @@ export default function App() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [results, setResults] = useState<CombinedEvaluationResult[]>([]);
+  const [assignmentText, setAssignmentText] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -77,6 +79,7 @@ export default function App() {
       }
       const data = (await res.json()) as Assignment;
       setAssignment(data);
+      setAssignmentText(rawContent);
       setCriteriaConfirmed(false);
       setStep("criteria");
     } finally {
@@ -321,6 +324,10 @@ export default function App() {
             <ResultsStep
               results={results}
               emailByStudentId={importResult?.emailByStudentId ?? {}}
+              answerByStudentId={Object.fromEntries(
+                (importResult?.studentAnswers ?? []).map((a) => [a.id, a.answerText])
+              )}
+              assignmentText={assignmentText}
               assignmentLabel={assignment ? `${assignment.subject} / ${assignment.unit}` : ""}
               onRestart={() => {
                 setAssignment(null);
@@ -328,6 +335,7 @@ export default function App() {
                 setPendingFile(null);
                 setImportResult(null);
                 setResults([]);
+                setAssignmentText("");
                 setStep("upload");
               }}
             />
@@ -408,11 +416,15 @@ function GradingStep({
 function ResultsStep({
   results,
   emailByStudentId,
+  answerByStudentId,
+  assignmentText,
   assignmentLabel,
   onRestart,
 }: {
   results: CombinedEvaluationResult[];
   emailByStudentId: Record<string, string>;
+  answerByStudentId: Record<string, string>;
+  assignmentText: string;
   assignmentLabel: string;
   onRestart: () => void;
 }) {
@@ -462,6 +474,7 @@ function ResultsStep({
               <th className="px-3 py-2">5段階評価</th>
               <th className="px-3 py-2">100点法</th>
               <th className="px-3 py-2">コメント</th>
+              <th className="px-3 py-2">改善提案</th>
             </tr>
           </thead>
           <tbody>
@@ -482,6 +495,7 @@ function ResultsStep({
                 <td className="px-3 py-2">{r.fiveScale}</td>
                 <td className="px-3 py-2">{r.hundred}</td>
                 <td className="px-3 py-2 text-ink-muted">{r.comment}</td>
+                <td className="px-3 py-2 text-ink-muted">{r.improvementSuggestion}</td>
               </tr>
             ))}
           </tbody>
@@ -525,6 +539,8 @@ function ResultsStep({
       <FeedbackDelivery
         results={results}
         emailByStudentId={emailByStudentId}
+        answerByStudentId={answerByStudentId}
+        assignmentText={assignmentText}
         assignmentLabel={assignmentLabel}
       />
     </div>

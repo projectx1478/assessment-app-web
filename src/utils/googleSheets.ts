@@ -12,6 +12,7 @@ export interface SheetRow {
   fiveScale: number;
   hundred: number;
   comment: string;
+  improvementSuggestion: string;
 }
 
 async function getFirstSheetTitle(spreadsheetId: string, accessToken: string): Promise<string> {
@@ -55,7 +56,16 @@ export async function createSpreadsheetWithResults(
   const created = await createRes.json<{ spreadsheetId: string; spreadsheetUrl: string }>();
 
   const values = [
-    ["生徒ID", "三観点評価（基礎）", "三観点評価（標準）", "三観点評価（応用）", "5段階評価", "100点法", "コメント"],
+    [
+      "生徒ID",
+      "三観点評価（基礎）",
+      "三観点評価（標準）",
+      "三観点評価（応用）",
+      "5段階評価",
+      "100点法",
+      "コメント",
+      "改善提案",
+    ],
     ...rows.map((r) => [
       r.studentAnswerId,
       r.threePerspective.basic,
@@ -64,6 +74,7 @@ export async function createSpreadsheetWithResults(
       String(r.fiveScale),
       String(r.hundred),
       r.comment,
+      r.improvementSuggestion,
     ]),
   ];
   const writeRes = await fetch(
@@ -103,6 +114,7 @@ export async function appendResultsToSpreadsheet(
     String(r.fiveScale),
     String(r.hundred),
     r.comment,
+    r.improvementSuggestion,
   ]);
 
   const res = await fetch(
